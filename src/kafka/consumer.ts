@@ -8,16 +8,24 @@ const kafkaConsumerListener = async (): Promise<void> => {
   const consumer = kafka.consumer({ groupId: 'search-engine' });
   await consumer.connect();
   await consumer.subscribe({ topic: 'DocumentsEvents', fromBeginning: true });
-
   await consumer.run({
-    eachMessage: async ({ partition, message }) => {
+    autoCommit: false,
+    eachMessage: async ({ topic, partition, message }) => {
       console.log({
         partition,
         offset: message.offset,
         value: message?.value?.toString(),
       });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 300);
+      });
+      if (partition === 0)
+        consumer.commitOffsets([{ topic, partition, offset: message.offset }]);
     },
   });
+  setTimeout(() => {
+    consumer.seek({ topic: 'DocumentsEvents', partition: 0, offset: '80' });
+  }, 20000);
 
   console.log(`Running kafka consumer.`);
 };
