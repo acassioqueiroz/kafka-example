@@ -1,10 +1,11 @@
 import express from 'express';
+import routes from './routes';
+
+import './kafka/consumer';
 
 const app = express();
 
-app.use('/', (requst, response) => {
-  return response.json({ teste: 'ok' });
-});
+app.use(routes);
 
 app.use(express.json());
 
